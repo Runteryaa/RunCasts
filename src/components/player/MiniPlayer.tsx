@@ -17,9 +17,9 @@ export default function MiniPlayer() {
   const isPlaying = playbackState === 'playing';
 
   const currentTab = useNavigationState(state => {
-    if (!state) return null;
+    if (!state || typeof state.index !== 'number') return null;
     const mainRoute = state.routes[state.index];
-    if (mainRoute?.name === 'MainTabs' && mainRoute.state) {
+    if (mainRoute?.name === 'MainTabs' && mainRoute.state && typeof mainRoute.state.index === 'number') {
       return mainRoute.state.routes[mainRoute.state.index]?.name;
     }
     return null;

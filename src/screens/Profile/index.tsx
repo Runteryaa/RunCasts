@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, StatusBar, ScrollView } from 'react-native';
-import { useDownloadedTracks, TrackPlayer, DownloadManager } from 'react-native-nitro-player';
+import { useDownloadedTracks, TrackPlayer, DownloadManager, PlayerQueue } from 'react-native-nitro-player';
 import { Play, Trash2, Settings, DownloadCloud } from 'lucide-react-native';
 import { usePlayerStore } from '../../store/usePlayerStore';
 
@@ -14,7 +14,13 @@ export default function ProfileScreen({ navigation }: any) {
     setMiniPlayerVisible(true);
     
     try {
-      await TrackPlayer.playSong(track.trackId);
+      let playlists = PlayerQueue.getAllPlaylists();
+      let pId = PlayerQueue.getCurrentPlaylistId();
+      if (!pId && playlists.length > 0) pId = playlists[0].id;
+      if (!pId) pId = await PlayerQueue.createPlaylist('Downloads', 'Downloaded Episodes');
+
+      await PlayerQueue.addTrackToPlaylist(pId, track.originalTrack);
+      await TrackPlayer.playSong(track.trackId, pId);
     } catch (error) {
       console.log('Error playing downloaded track:', error);
     }
