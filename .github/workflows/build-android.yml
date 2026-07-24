@@ -44,7 +44,12 @@ jobs:
       - name: Expo Prebuild
         run: npx expo prebuild --platform android --clean
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        
       - name: Build Android APK (Debug)
+        env:
+          GRADLE_OPTS: "-Dhttp.socketTimeout=60000 -Dhttp.connectionTimeout=60000"
         run: |
           cd android
           chmod +x gradlew
