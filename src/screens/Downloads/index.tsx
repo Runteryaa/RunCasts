@@ -10,11 +10,11 @@ export default function DownloadsScreen() {
   const setMiniPlayerVisible = usePlayerStore((state) => state.setMiniPlayerVisible);
 
   const handlePlayDownloaded = async (track: any) => {
-    setCurrentPodcast({ id: track.id, title: track.title });
+    setCurrentPodcast({ id: track.trackId, title: track.originalTrack.title });
     setMiniPlayerVisible(true);
     
     try {
-      await TrackPlayer.playSong(track.id);
+      await TrackPlayer.playSong(track.trackId);
     } catch (error) {
       console.log('Error playing downloaded track:', error);
     }
@@ -24,18 +24,18 @@ export default function DownloadsScreen() {
     return (
       <TouchableOpacity style={styles.episodeCard} activeOpacity={0.7} onPress={() => handlePlayDownloaded(item)}>
         <View style={styles.episodeImageWrapper}>
-          <Image source={{ uri: item.artwork || 'https://via.placeholder.com/150' }} style={styles.episodeImage} />
+          <Image source={{ uri: item.originalTrack.artwork || 'https://via.placeholder.com/150' }} style={styles.episodeImage} />
           <View style={styles.playOverlay}>
             <Play color="#fff" fill="#fff" size={20} />
           </View>
         </View>
         <View style={styles.episodeInfo}>
-          <Text style={styles.episodeTitle} numberOfLines={2}>{item.title}</Text>
-          <Text style={styles.episodeArtist} numberOfLines={1}>{item.artist}</Text>
+          <Text style={styles.episodeTitle} numberOfLines={2}>{item.originalTrack.title}</Text>
+          <Text style={styles.episodeArtist} numberOfLines={1}>{item.originalTrack.artist}</Text>
         </View>
         <TouchableOpacity style={styles.deleteBtn} onPress={async () => {
            try {
-             await DownloadManager.deleteDownloadedTrack(item.id);
+             await DownloadManager.deleteDownloadedTrack(item.trackId);
            } catch(e) {
              console.log('Error deleting', e);
            }
@@ -55,7 +55,7 @@ export default function DownloadsScreen() {
 
       <FlatList
         data={downloadedTracks}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.trackId}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
