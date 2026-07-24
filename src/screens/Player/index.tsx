@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TrackPlayer, useOnPlaybackStateChange, useOnPlaybackProgressChange } from 'react-native-nitro-player';
 import { usePlayerStore } from '../../store/usePlayerStore';
@@ -7,11 +8,20 @@ import { usePlayerStore } from '../../store/usePlayerStore';
 const { width } = Dimensions.get('window');
 
 export default function PlayerScreen({ navigation }: any) {
-  const { currentPodcast } = usePlayerStore();
+  const { currentPodcast, setPlayerTabActive } = usePlayerStore();
   const { state: playbackState } = useOnPlaybackStateChange();
   const { position, totalDuration } = useOnPlaybackProgressChange();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setPlayerTabActive(true);
+      return () => {
+        setPlayerTabActive(false);
+      };
+    }, [])
+  );
 
   useEffect(() => {
     setIsPlaying(playbackState === 'playing');

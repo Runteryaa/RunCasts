@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { TrackPlayer, useOnPlaybackStateChange, useOnPlaybackProgressChange } from 'react-native-nitro-player';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import { Play, Pause, X } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeOutDown, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 export default function MiniPlayer() {
-  const { currentPodcast, isMiniPlayerVisible, setMiniPlayerVisible } = usePlayerStore();
+  const { currentPodcast, isMiniPlayerVisible, isPlayerTabActive, setMiniPlayerVisible } = usePlayerStore();
   const navigation = useNavigation<any>();
   
   const { state: playbackState } = useOnPlaybackStateChange();
@@ -16,16 +16,7 @@ export default function MiniPlayer() {
   
   const isPlaying = playbackState === 'playing';
 
-  const currentTab = useNavigationState(state => {
-    if (!state || typeof state.index !== 'number') return null;
-    const mainRoute = state.routes[state.index];
-    if (mainRoute?.name === 'MainTabs' && mainRoute.state && typeof mainRoute.state.index === 'number') {
-      return mainRoute.state.routes[mainRoute.state.index]?.name;
-    }
-    return null;
-  });
-
-  if (!isMiniPlayerVisible || !currentPodcast || currentTab === 'Playing') return null;
+  if (!isMiniPlayerVisible || !currentPodcast || isPlayerTabActive) return null;
 
   const togglePlayback = async () => {
     if (isPlaying) {
