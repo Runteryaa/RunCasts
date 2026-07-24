@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Image, StatusBar } from 'react-native';
-import { TrackPlayer, PlayerQueue, DownloadManager, useDownloadedTracks } from 'react-native-nitro-player';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Image, StatusBar, Alert } from 'react-native';
+import { TrackPlayer, PlayerQueue, DownloadManager, useDownloadedTracks, useDownloadProgress } from 'react-native-nitro-player';
 import { usePodcastDetails } from '../../hooks/usePodcastDetails';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { Play, PlayCircle, Clock, Calendar, ArrowLeft, Download, CheckCircle2 } from 'lucide-react-native';
@@ -13,6 +13,7 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
   const setCurrentPodcast = usePlayerStore((state) => state.setCurrentPodcast);
   const setMiniPlayerVisible = usePlayerStore((state) => state.setMiniPlayerVisible);
   const { isTrackDownloaded } = useDownloadedTracks();
+  const { getProgress } = useDownloadProgress();
 
   const handlePlayEpisode = async (episode: any) => {
     setCurrentPodcast({ id: episode.id, title: episode.title });
@@ -57,6 +58,7 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
         url: episode.enclosureUrl,
         artwork: episode.image || episode.feedImage || image,
       });
+      Alert.alert('İndirme Başladı', `${episode.title} arka planda indiriliyor...`);
     } catch (e) {
       console.log('Download Error:', e);
     }
@@ -66,6 +68,8 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
     const pubDate = new Date(item.datePublished * 1000).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     const duration = Math.round((item.duration || 0) / 60);
     const downloaded = isTrackDownloaded(item.id.toString());
+    const progress = getProgress(item.id.toString());
+    const isDownloading = progress?.state === 'downloading' || progress?.state === 'pending';
 
     return (
       <TouchableOpacity style={styles.episodeCard} activeOpacity={0.7} onPress={() => handlePlayEpisode(item)}>
@@ -92,9 +96,14 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
           </View>
         </View>
         
-        <TouchableOpacity style={styles.downloadBtn} onPress={() => { if(!downloaded) handleDownloadEpisode(item); }}>
+        <TouchableOpacity 
+          style={styles.downloadBtn} 
+          onPress={() => { if(!downloaded && !isDownloading) handleDownloadEpisode(item); }}
+        >
           {downloaded ? (
             <CheckCircle2 color="#10B981" size={24} />
+          ) : isDownloading ? (
+            <ActivityIndicator size="small" color="#007AFF" />
           ) : (
             <Download color="#9CA3AF" size={24} />
           )}
