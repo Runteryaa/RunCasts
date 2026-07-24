@@ -1,13 +1,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Compass, Users, User, Heart } from 'lucide-react-native';
+import { Compass, Users, User, Heart, DownloadCloud } from 'lucide-react-native';
 import DiscoverScreen from '../screens/Discover';
 import PublishersScreen from '../screens/Publishers';
+import DownloadsScreen from '../screens/Downloads';
 
 export type TabParamList = {
   Discover: undefined;
   Publishers: undefined;
-  Favorites: undefined;
+  Downloads: undefined;
   Profile: undefined;
 };
 
@@ -56,11 +57,11 @@ export default function TabNavigator() {
         }} 
       />
       <Tab.Screen 
-        name="Favorites" 
-        component={DiscoverScreen} // Temporary placeholder
+        name="Downloads" 
+        component={DownloadsScreen} 
         options={{ 
-          title: 'Favoriler',
-          tabBarIcon: ({ color, size }) => <Heart color={color} size={size || 24} />
+          title: 'İndirilenler',
+          tabBarIcon: ({ color, size }) => <DownloadCloud color={color} size={size || 24} />
         }} 
       />
       <Tab.Screen 

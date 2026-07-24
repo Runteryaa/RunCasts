@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Image, StatusBar } from 'react-native';
-import { TrackPlayer, PlayerQueue } from 'react-native-nitro-player';
+import { TrackPlayer, PlayerQueue, DownloadManager, useDownloadedTracks } from 'react-native-nitro-player';
 import { usePodcastDetails } from '../../hooks/usePodcastDetails';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import { Play, PlayCircle, Clock, Calendar, ArrowLeft } from 'lucide-react-native';
+import { Play, PlayCircle, Clock, Calendar, ArrowLeft, Download, CheckCircle2 } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -12,6 +12,7 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
   const { data, isLoading } = usePodcastDetails(podcastId);
   const setCurrentPodcast = usePlayerStore((state) => state.setCurrentPodcast);
   const setMiniPlayerVisible = usePlayerStore((state) => state.setMiniPlayerVisible);
+  const { isTrackDownloaded } = useDownloadedTracks();
 
   const handlePlayEpisode = async (episode: any) => {
     setCurrentPodcast({ id: episode.id, title: episode.title });
@@ -44,9 +45,27 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
     }
   };
 
+  const handleDownloadEpisode = async (episode: any) => {
+    try {
+      const trackId = episode.id.toString();
+      await DownloadManager.downloadTrack({
+        id: trackId,
+        title: episode.title,
+        artist: title,
+        album: title,
+        duration: Math.round(episode.duration || 0),
+        url: episode.enclosureUrl,
+        artwork: episode.image || episode.feedImage || image,
+      });
+    } catch (e) {
+      console.log('Download Error:', e);
+    }
+  };
+
   const renderItem = ({ item }: any) => {
     const pubDate = new Date(item.datePublished * 1000).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     const duration = Math.round((item.duration || 0) / 60);
+    const downloaded = isTrackDownloaded(item.id.toString());
 
     return (
       <TouchableOpacity style={styles.episodeCard} activeOpacity={0.7} onPress={() => handlePlayEpisode(item)}>
@@ -72,6 +91,14 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
             )}
           </View>
         </View>
+        
+        <TouchableOpacity style={styles.downloadBtn} onPress={() => { if(!downloaded) handleDownloadEpisode(item); }}>
+          {downloaded ? (
+            <CheckCircle2 color="#10B981" size={24} />
+          ) : (
+            <Download color="#9CA3AF" size={24} />
+          )}
+        </TouchableOpacity>
       </TouchableOpacity>
     );
   };
@@ -246,5 +273,10 @@ const styles = StyleSheet.create({
   emptyText: { 
     color: '#9CA3AF',
     fontSize: 15,
+  },
+  downloadBtn: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 });
