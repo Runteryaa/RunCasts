@@ -6,6 +6,7 @@ import { usePlayerStore } from '../../store/usePlayerStore';
 import { Play, PlayCircle, Clock, Calendar, ArrowLeft, Download, CheckCircle2 } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import CircularProgress from '../../components/ui/CircularProgress';
 
 export default function PodcastDetailsScreen({ route, navigation }: any) {
   const { podcastId, title, image } = route.params;
@@ -58,7 +59,7 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
         url: episode.enclosureUrl,
         artwork: episode.image || episode.feedImage || image,
       });
-      Alert.alert('İndirme Başladı', `${episode.title} arka planda indiriliyor...`);
+      // Removed Alert.alert, InAppNotification will handle it!
     } catch (e) {
       console.log('Download Error:', e);
     }
@@ -103,7 +104,7 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
           {downloaded ? (
             <CheckCircle2 color="#10B981" size={24} />
           ) : isDownloading ? (
-            <ActivityIndicator size="small" color="#007AFF" />
+            <CircularProgress progress={progress?.progress || 0} size={24} color="#F59E0B" />
           ) : (
             <Download color="#9CA3AF" size={24} />
           )}
