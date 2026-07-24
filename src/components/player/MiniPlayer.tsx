@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import TrackPlayer, { State, usePlaybackState } from 'react-native-track-player';
+import TrackPlayer, { State, usePlaybackState, useProgress } from 'react-native-track-player';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useNavigation } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
+import { Play, Pause, X } from 'lucide-react-native';
 
 export default function MiniPlayer() {
-  const { currentPodcast, isMiniPlayerVisible } = usePlayerStore();
+  const { currentPodcast, isMiniPlayerVisible, setMiniPlayerVisible } = usePlayerStore();
   const navigation = useNavigation<any>();
   const playbackState = usePlaybackState();
   const [isPlaying, setIsPlaying] = useState(false);
+  const { position, duration } = useProgress();
 
   useEffect(() => {
-    // In v4, usePlaybackState returns an object with state or just the state enum depending on version. 
-    // Usually it's `playbackState.state` in v4 if it's an object, or just `playbackState`
     const stateVal = typeof playbackState === 'object' && playbackState !== null && 'state' in playbackState 
       ? (playbackState as any).state 
       : playbackState;
@@ -30,60 +31,118 @@ export default function MiniPlayer() {
     }
   };
 
+  const closePlayer = async () => {
+    await TrackPlayer.stop();
+    setMiniPlayerVisible(false);
+  };
+
+  const progressPercent = duration > 0 ? (position / duration) * 100 : 0;
+
   return (
-    <TouchableOpacity 
-      style={styles.container} 
-      onPress={() => navigation.navigate('Player')}
+    <View 
+      style={styles.container}
     >
-      <View style={styles.info}>
-        <Text style={styles.title} numberOfLines={1}>{currentPodcast.title}</Text>
-        <Text style={styles.subtitle} numberOfLines={1}>Şu an oynatılıyor</Text>
-      </View>
-      <TouchableOpacity style={styles.playButton} onPress={togglePlayback}>
-        <Text style={styles.playText}>{isPlaying ? '||' : '▶'}</Text>
+      <TouchableOpacity 
+        style={styles.touchableArea}
+        activeOpacity={0.9}
+        onPress={() => navigation.navigate('Player')} // Full player screen (to be designed next)
+      >
+        <BlurView intensity={80} tint="light" style={styles.blurContainer}>
+          {/* Progress Bar Top */}
+          <View style={styles.progressBarBg}>
+            <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+          </View>
+
+          <View style={styles.content}>
+            {/* Left: Close Btn */}
+            <TouchableOpacity style={styles.iconBtn} onPress={closePlayer}>
+              <X color="#6B7280" size={20} />
+            </TouchableOpacity>
+
+            {/* Center: Info */}
+            <View style={styles.info}>
+              <Text style={styles.title} numberOfLines={1}>{currentPodcast.title}</Text>
+              <Text style={styles.subtitle} numberOfLines={1}>Şu an oynatılıyor</Text>
+            </View>
+
+            {/* Right: Play/Pause Btn */}
+            <TouchableOpacity style={styles.playBtn} onPress={togglePlayback}>
+              {isPlaying ? (
+                <Pause color="#111827" fill="#111827" size={24} />
+              ) : (
+                <Play color="#111827" fill="#111827" size={24} />
+              )}
+            </TouchableOpacity>
+          </View>
+        </BlurView>
       </TouchableOpacity>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 50, // Tabs'in hemen üstünde durması için (Tab yüksekliğine göre ayarlanabilir)
+    bottom: 60, // Above the bottom tab navigator
+    left: 12,
+    right: 12,
+    zIndex: 999,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  touchableArea: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+  },
+  blurContainer: {
+    padding: 12,
+  },
+  progressBarBg: {
+    position: 'absolute',
+    top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#333',
+    height: 3,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#007AFF',
+  },
+  content: {
     flexDirection: 'row',
-    padding: 12,
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderColor: '#444'
+  },
+  iconBtn: {
+    padding: 8,
   },
   info: {
     flex: 1,
     justifyContent: 'center',
+    paddingHorizontal: 12,
   },
   title: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
+    color: '#111827',
+    fontWeight: '700',
+    fontSize: 15,
+    marginBottom: 2,
   },
   subtitle: {
-    color: '#aaa',
+    color: '#007AFF',
     fontSize: 12,
+    fontWeight: '500',
   },
-  playButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#fff',
+  playBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 12
+    marginLeft: 8,
   },
-  playText: {
-    color: '#333',
-    fontWeight: 'bold',
-    fontSize: 16
-  }
 });

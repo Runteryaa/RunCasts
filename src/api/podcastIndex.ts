@@ -1,8 +1,8 @@
 import CryptoJS from 'crypto-js';
 
-// TODO: Replace with your actual Podcast Index credentials or use react-native-dotenv
-const API_KEY = 'YOUR_API_KEY';
-const API_SECRET = 'YOUR_API_SECRET';
+// Replace with your actual Podcast Index credentials via .env file
+const API_KEY = process.env.EXPO_PUBLIC_PODCAST_INDEX_API_KEY || '';
+const API_SECRET = process.env.EXPO_PUBLIC_PODCAST_INDEX_API_SECRET || '';
 const BASE_URL = 'https://api.podcastindex.org/api/1.0';
 
 const getHeaders = () => {
