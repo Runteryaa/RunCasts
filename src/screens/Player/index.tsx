@@ -1,24 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
-import TrackPlayer, { usePlaybackState, State, useProgress } from 'react-native-track-player';
+import { TrackPlayer, useOnPlaybackStateChange, useOnPlaybackProgressChange } from 'react-native-nitro-player';
 import { usePlayerStore } from '../../store/usePlayerStore';
 
 const { width } = Dimensions.get('window');
 
 export default function PlayerScreen({ navigation }: any) {
   const { currentPodcast } = usePlayerStore();
-  const playbackState = usePlaybackState();
-  const { position, duration } = useProgress();
+  const { state: playbackState } = useOnPlaybackStateChange();
+  const { position, totalDuration } = useOnPlaybackProgressChange();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
 
   useEffect(() => {
-    const stateVal = typeof playbackState === 'object' && playbackState !== null && 'state' in playbackState 
-      ? (playbackState as any).state 
-      : playbackState;
-      
-    setIsPlaying(stateVal === State.Playing);
-    setIsBuffering(stateVal === State.Buffering);
+    setIsPlaying(playbackState === 'playing');
+    setIsBuffering(playbackState === 'buffering');
   }, [playbackState]);
 
   const togglePlayback = async () => {
@@ -30,11 +26,11 @@ export default function PlayerScreen({ navigation }: any) {
   };
 
   const skipForward = async () => {
-    await TrackPlayer.seekTo(position + 15);
+    await TrackPlayer.seek(position + 15);
   };
 
   const skipBackward = async () => {
-    await TrackPlayer.seekTo(Math.max(0, position - 15));
+    await TrackPlayer.seek(Math.max(0, position - 15));
   };
 
   const formatTime = (seconds: number) => {
@@ -62,11 +58,11 @@ export default function PlayerScreen({ navigation }: any) {
 
       <View style={styles.progressContainer}>
         <View style={styles.progressBarBg}>
-          <View style={[styles.progressBarFill, { width: duration > 0 ? `${(position / duration) * 100}%` : '0%' }]} />
+          <View style={[styles.progressBarFill, { width: totalDuration > 0 ? `${(position / totalDuration) * 100}%` : '0%' }]} />
         </View>
         <View style={styles.timeRow}>
           <Text style={styles.timeText}>{formatTime(position)}</Text>
-          <Text style={styles.timeText}>{formatTime(duration)}</Text>
+          <Text style={styles.timeText}>{formatTime(totalDuration)}</Text>
         </View>
       </View>
 
