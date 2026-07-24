@@ -5,10 +5,13 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TrackPlayer } from 'react-native-nitro-player';
 import RootNavigator from './src/navigation/RootNavigator';
+import { useDownloadNotifications } from './src/hooks/useDownloadNotifications';
 
 const queryClient = new QueryClient();
 
 export default function App() {
+  useDownloadNotifications();
+
   useEffect(() => {
     const setupPlayer = async () => {
       try {

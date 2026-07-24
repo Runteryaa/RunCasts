@@ -5,7 +5,6 @@ import TabNavigator from './TabNavigator';
 import PodcastDetailsScreen from '../screens/PodcastDetails';
 import MiniPlayer from '../components/player/MiniPlayer';
 import SettingsScreen from '../screens/Settings';
-import InAppNotification from '../components/ui/InAppNotification';
 
 export type RootStackParamList = {
   MainTabs: undefined;
@@ -36,7 +35,6 @@ export default function RootNavigator() {
         />
       </Stack.Navigator>
       <MiniPlayer />
-      <InAppNotification />
     </View>
   );
 }
