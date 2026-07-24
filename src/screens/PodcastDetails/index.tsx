@@ -20,7 +20,9 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
     try {
       // Nitro Player uses Playlists and Track IDs
       let playlists = PlayerQueue.getAllPlaylists();
-      let pId = playlists.length > 0 ? playlists[0].id : null;
+      let pId = PlayerQueue.getCurrentPlaylistId();
+      if (!pId && playlists.length > 0) pId = playlists[0].id;
+      
       if (!pId) {
         pId = await PlayerQueue.createPlaylist('Podcast', 'Podcast Episodes');
       }
