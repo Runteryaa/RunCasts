@@ -1,25 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import TrackPlayer, { State, usePlaybackState, useProgress } from 'react-native-track-player';
+import { TrackPlayer, useOnPlaybackStateChange, useOnPlaybackProgressChange } from 'react-native-nitro-player';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import { Play, Pause, X } from 'lucide-react-native';
+import Animated, { FadeInDown, FadeOutDown, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 export default function MiniPlayer() {
   const { currentPodcast, isMiniPlayerVisible, setMiniPlayerVisible } = usePlayerStore();
   const navigation = useNavigation<any>();
-  const playbackState = usePlaybackState();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const { position, duration } = useProgress();
-
-  useEffect(() => {
-    const stateVal = typeof playbackState === 'object' && playbackState !== null && 'state' in playbackState 
-      ? (playbackState as any).state 
-      : playbackState;
-      
-    setIsPlaying(stateVal === State.Playing);
-  }, [playbackState]);
+  
+  const { state: playbackState } = useOnPlaybackStateChange();
+  const { position, totalDuration } = useOnPlaybackProgressChange();
+  
+  const isPlaying = playbackState === 'playing';
 
   if (!isMiniPlayerVisible || !currentPodcast) return null;
 
@@ -32,14 +27,16 @@ export default function MiniPlayer() {
   };
 
   const closePlayer = async () => {
-    await TrackPlayer.stop();
+    await TrackPlayer.pause(); // Nitro Player might not have stop(), we just pause it.
     setMiniPlayerVisible(false);
   };
 
-  const progressPercent = duration > 0 ? (position / duration) * 100 : 0;
+  const progressPercent = totalDuration > 0 ? (position / totalDuration) * 100 : 0;
 
   return (
-    <View 
+    <Animated.View 
+      entering={SlideInDown.duration(400).springify()} 
+      exiting={SlideOutDown.duration(300)}
       style={styles.container}
     >
       <TouchableOpacity 
@@ -76,7 +73,7 @@ export default function MiniPlayer() {
           </View>
         </BlurView>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 }
 

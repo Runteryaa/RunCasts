@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Image, StatusBar } from 'react-native';
-import TrackPlayer from 'react-native-track-player';
+import { TrackPlayer, PlayerQueue } from 'react-native-nitro-player';
 import { usePodcastDetails } from '../../hooks/usePodcastDetails';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { Play, PlayCircle, Clock, Calendar, ArrowLeft } from 'lucide-react-native';
@@ -18,15 +18,25 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
     setMiniPlayerVisible(true);
     
     try {
-      await TrackPlayer.reset();
-      await TrackPlayer.add({
-        id: episode.id.toString(),
-        url: episode.enclosureUrl, 
+      // Nitro Player uses Playlists and Track IDs
+      let playlists = PlayerQueue.getAllPlaylists();
+      let pId = playlists.length > 0 ? playlists[0].id : null;
+      if (!pId) {
+        pId = await PlayerQueue.createPlaylist('Podcast', 'Podcast Episodes');
+      }
+
+      const trackId = episode.id.toString();
+      await PlayerQueue.addTrackToPlaylist(pId, {
+        id: trackId,
         title: episode.title,
         artist: title,
+        album: title,
+        duration: Math.round(episode.duration || 0),
+        url: episode.enclosureUrl,
         artwork: episode.image || episode.feedImage || image,
       });
-      await TrackPlayer.play();
+
+      await TrackPlayer.playSong(trackId, pId);
     } catch (error) {
       console.log('Error playing episode:', error);
     }
