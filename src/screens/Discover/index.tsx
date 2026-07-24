@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Image, StatusBar } from 'react-native';
+import Animated, { useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePodcastSearch, forceRefreshSearch, useTrendingPodcasts } from '../../hooks/usePodcastSearch';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +11,13 @@ export default function DiscoverScreen({ navigation }: any) {
   const [activeQuery, setActiveQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
   const queryClient = useQueryClient();
 
   const { data: searchData, isLoading: isSearchLoading } = usePodcastSearch(activeQuery);
@@ -138,13 +146,32 @@ export default function DiscoverScreen({ navigation }: any) {
   const verticalData = activeQuery ? searchData?.feeds : globalTrending?.feeds;
   const isVerticalLoading = activeQuery ? isSearchLoading : isGlobalTrendingLoading;
 
+  const headerTitleStyle = useAnimatedStyle(() => {
+    const height = interpolate(scrollY.value, [0, 60], [48, 0], Extrapolation.CLAMP);
+    const opacity = interpolate(scrollY.value, [0, 40], [1, 0], Extrapolation.CLAMP);
+    return {
+      height,
+      opacity,
+      overflow: 'hidden',
+    };
+  });
+
+  const headerContainerStyle = useAnimatedStyle(() => {
+    const shadowOpacity = interpolate(scrollY.value, [0, 60], [0, 0.1], Extrapolation.CLAMP);
+    return {
+      shadowOpacity,
+    };
+  });
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Keşfet</Text>
+      {/* Animated Header */}
+      <Animated.View style={[styles.header, headerContainerStyle]}>
+        <Animated.View style={headerTitleStyle}>
+          <Text style={styles.headerTitle}>Keşfet</Text>
+        </Animated.View>
         
         {/* Search Bar */}
         <View style={styles.searchWrapper}>
@@ -164,12 +191,14 @@ export default function DiscoverScreen({ navigation }: any) {
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </Animated.View>
       
       {/* Content */}
-      <FlatList
+      <Animated.FlatList
         data={verticalData || []}
-        keyExtractor={(item) => `global_${item.id}`}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        keyExtractor={(item: any) => `global_${item.id}`}
         renderItem={renderVerticalItem}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={styles.mainList}
@@ -196,20 +225,26 @@ export default function DiscoverScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 20,
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f1f1'
+    borderBottomColor: '#f1f1f1',
+    zIndex: 10,
+    elevation: 4,
   },
-  headerTitle: { fontSize: 32, fontWeight: '800', color: '#111827', marginBottom: 16 },
+  headerTitle: { fontSize: 32, fontWeight: '800', color: '#111827' },
   searchWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16, height: 48 },
   searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontSize: 16, color: '#111827' },
   searchBtn: { backgroundColor: '#007AFF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, marginLeft: 8 },
   searchBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 13 },
-  mainList: { paddingBottom: 100 },
+  mainList: { paddingBottom: 100, paddingTop: 156 },
   sectionHeader: { paddingHorizontal: 20, marginTop: 24, marginBottom: 12 },
   sectionTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   horizontalList: { paddingHorizontal: 16 },
