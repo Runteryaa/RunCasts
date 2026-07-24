@@ -3,13 +3,13 @@ import { View, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TabNavigator from './TabNavigator';
 import PodcastDetailsScreen from '../screens/PodcastDetails';
-import PlayerScreen from '../screens/Player';
 import MiniPlayer from '../components/player/MiniPlayer';
+import SettingsScreen from '../screens/Settings';
 
 export type RootStackParamList = {
   MainTabs: undefined;
-  PodcastDetails: { podcastId: string; title: string };
-  Player: undefined;
+  PodcastDetails: { podcastId: string; title: string; image: string };
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -29,9 +29,9 @@ export default function RootNavigator() {
           options={({ route }) => ({ title: route.params.title })} 
         />
         <Stack.Screen 
-          name="Player" 
-          component={PlayerScreen} 
-          options={{ presentation: 'modal', headerShown: false }} 
+          name="Settings" 
+          component={SettingsScreen} 
+          options={{ title: 'Ayarlar', presentation: 'card' }} 
         />
       </Stack.Navigator>
       <MiniPlayer />

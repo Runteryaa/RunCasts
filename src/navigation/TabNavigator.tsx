@@ -1,14 +1,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Compass, Users, User, Heart, DownloadCloud } from 'lucide-react-native';
+import { Compass, User, PlayCircle } from 'lucide-react-native';
 import DiscoverScreen from '../screens/Discover';
-import PublishersScreen from '../screens/Publishers';
-import DownloadsScreen from '../screens/Downloads';
+import PlayerScreen from '../screens/Player';
+import ProfileScreen from '../screens/Profile';
 
 export type TabParamList = {
   Discover: undefined;
-  Publishers: undefined;
-  Downloads: undefined;
+  Playing: undefined;
   Profile: undefined;
 };
 
@@ -49,24 +48,16 @@ export default function TabNavigator() {
         }} 
       />
       <Tab.Screen 
-        name="Publishers" 
-        component={PublishersScreen} 
+        name="Playing" 
+        component={PlayerScreen} 
         options={{ 
-          title: 'Yayıncılar',
-          tabBarIcon: ({ color, size }) => <Users color={color} size={size || 24} />
-        }} 
-      />
-      <Tab.Screen 
-        name="Downloads" 
-        component={DownloadsScreen} 
-        options={{ 
-          title: 'İndirilenler',
-          tabBarIcon: ({ color, size }) => <DownloadCloud color={color} size={size || 24} />
+          title: 'Çalınan',
+          tabBarIcon: ({ color, size }) => <PlayCircle color={color} size={size || 24} />
         }} 
       />
       <Tab.Screen 
         name="Profile" 
-        component={DiscoverScreen} // Temporary placeholder
+        component={ProfileScreen} 
         options={{ 
           title: 'Profil',
           tabBarIcon: ({ color, size }) => <User color={color} size={size || 24} />

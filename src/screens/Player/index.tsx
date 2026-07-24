@@ -43,9 +43,7 @@ export default function PlayerScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backText}>▼ Kapat</Text>
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Şu An Çalınan</Text>
       </View>
       
       <View style={styles.artworkPlaceholder}>
@@ -90,10 +88,9 @@ export default function PlayerScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#121212' },
-  header: { padding: 16, alignItems: 'flex-start' },
-  backButton: { padding: 8 },
-  backText: { color: '#fff', fontSize: 16 },
-  artworkPlaceholder: { width: width - 64, height: width - 64, backgroundColor: '#333', alignSelf: 'center', borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 20 },
+  header: { padding: 16, alignItems: 'center' },
+  headerTitle: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  artworkPlaceholder: { width: width - 64, height: width - 64, backgroundColor: '#333', alignSelf: 'center', borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 10 },
   artworkText: { color: '#666', fontSize: 18 },
   infoContainer: { padding: 32, alignItems: 'center' },
   title: { color: '#fff', fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },

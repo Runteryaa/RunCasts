@@ -29,8 +29,11 @@ export const searchPodcasts = async (query: string) => {
   return response.json();
 };
 
-export const getTrendingPodcasts = async () => {
-  const url = `${BASE_URL}/podcasts/trending?max=20`;
+export const getTrendingPodcasts = async (lang?: string) => {
+  let url = `${BASE_URL}/podcasts/trending?max=20`;
+  if (lang) {
+    url += `&lang=${lang}`;
+  }
   const response = await fetch(url, { headers: getHeaders() });
   
   if (!response.ok) {

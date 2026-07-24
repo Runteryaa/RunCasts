@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { TrackPlayer, useOnPlaybackStateChange, useOnPlaybackProgressChange } from 'react-native-nitro-player';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import { Play, Pause, X } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeOutDown, SlideInDown, SlideOutDown } from 'react-native-reanimated';
@@ -16,7 +16,16 @@ export default function MiniPlayer() {
   
   const isPlaying = playbackState === 'playing';
 
-  if (!isMiniPlayerVisible || !currentPodcast) return null;
+  const currentTab = useNavigationState(state => {
+    if (!state) return null;
+    const mainRoute = state.routes[state.index];
+    if (mainRoute?.name === 'MainTabs' && mainRoute.state) {
+      return mainRoute.state.routes[mainRoute.state.index]?.name;
+    }
+    return null;
+  });
+
+  if (!isMiniPlayerVisible || !currentPodcast || currentTab === 'Playing') return null;
 
   const togglePlayback = async () => {
     if (isPlaying) {
@@ -42,7 +51,7 @@ export default function MiniPlayer() {
       <TouchableOpacity 
         style={styles.touchableArea}
         activeOpacity={0.9}
-        onPress={() => navigation.navigate('Player')} // Full player screen (to be designed next)
+        onPress={() => navigation.navigate('Playing')} 
       >
         <BlurView intensity={80} tint="light" style={styles.blurContainer}>
           {/* Progress Bar Top */}

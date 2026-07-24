@@ -31,18 +31,18 @@ export const usePodcastSearch = (query: string) => {
   });
 };
 
-export const useTrendingPodcasts = () => {
+export const useTrendingPodcasts = (lang?: string) => {
   return useQuery({
-    queryKey: ['podcasts', 'trending'],
+    queryKey: ['podcasts', 'trending', lang],
     queryFn: async () => {
-      const cacheKey = 'cache_trending';
+      const cacheKey = `cache_trending_${lang || 'global'}`;
       const cachedData = storage.getString(cacheKey);
       
       if (cachedData) {
         return JSON.parse(cachedData);
       }
 
-      const data = await getTrendingPodcasts();
+      const data = await getTrendingPodcasts(lang);
       storage.set(cacheKey, JSON.stringify(data));
       return data;
     },
