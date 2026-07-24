@@ -15,6 +15,7 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
   const setMiniPlayerVisible = usePlayerStore((state) => state.setMiniPlayerVisible);
   const { isTrackDownloaded } = useDownloadedTracks();
   const { getProgress } = useDownloadProgress();
+  const [initiatingDownloads, setInitiatingDownloads] = React.useState<Record<string, boolean>>({});
 
   const handlePlayEpisode = async (episode: any) => {
     setCurrentPodcast({ id: episode.id, title: episode.title });
@@ -48,8 +49,9 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
   };
 
   const handleDownloadEpisode = async (episode: any) => {
+    const trackId = episode.id.toString();
+    setInitiatingDownloads(prev => ({ ...prev, [trackId]: true }));
     try {
-      const trackId = episode.id.toString();
       await DownloadManager.downloadTrack({
         id: trackId,
         title: episode.title,
@@ -59,9 +61,15 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
         url: episode.enclosureUrl,
         artwork: episode.image || episode.feedImage || image,
       });
-      // Removed Alert.alert, InAppNotification will handle it!
+      
+      // Clear the initiating state after a few seconds to ensure we don't get stuck
+      // if the download progress hook takes a while to register it.
+      setTimeout(() => {
+        setInitiatingDownloads(prev => ({ ...prev, [trackId]: false }));
+      }, 3000);
     } catch (e) {
       console.log('Download Error:', e);
+      setInitiatingDownloads(prev => ({ ...prev, [trackId]: false }));
     }
   };
 
@@ -70,7 +78,9 @@ export default function PodcastDetailsScreen({ route, navigation }: any) {
     const duration = Math.round((item.duration || 0) / 60);
     const downloaded = isTrackDownloaded(item.id.toString());
     const progress = getProgress(item.id.toString());
-    const isDownloading = progress?.state === 'downloading' || progress?.state === 'pending';
+    const isDownloadingState = progress?.state === 'downloading' || progress?.state === 'pending';
+    const isInitiating = initiatingDownloads[item.id.toString()];
+    const isDownloading = isDownloadingState || isInitiating;
 
     return (
       <TouchableOpacity style={styles.episodeCard} activeOpacity={0.7} onPress={() => handlePlayEpisode(item)}>
